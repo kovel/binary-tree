@@ -111,7 +111,7 @@ func (t *Tree) PrintTree() {
 			} else {
 				localStack.Push(nil)
 				localStack.Push(nil)
-				fmt.Printf("%s--", strings.Repeat(" ", n))
+				fmt.Print("--")
 			}
 			fmt.Print(strings.Repeat(" ", n*2-2))
 		}
