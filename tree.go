@@ -5,6 +5,10 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"bufio"
+	"os"
+	"strconv"
+	"math"
 )
 
 type Node struct {
@@ -74,6 +78,106 @@ func (t *Tree) Insert(node *Node) {
 	}
 }
 
+func (t *Tree)Find(key int) *Node {
+	if t.Root == nil {
+		return nil
+	}
+
+	current := t.Root
+	for current.Key != key {
+		if key < current.Key {
+			current = current.Left
+		} else {
+			current = current.Right
+		}
+
+		if current == nil {
+			return nil
+		}
+	}
+
+	return current
+}
+
+func (t *Tree)Delete(key int) bool {
+	isLeftKey := false
+	current := t.Root;
+	parent := current
+	for current.Key != key {
+		parent = current
+		if key < current.Key {
+			isLeftKey = true;
+			current = current.Left
+		} else {
+			isLeftKey = false
+			current = current.Right
+		}
+
+		if current == nil {
+			return false
+		}
+	}
+
+	if current.Left == nil && current.Right == nil {
+		if current == t.Root {
+			t.Root = nil
+		} else if isLeftKey {
+			parent.Left = nil
+		} else {
+			parent.Right = nil
+		}
+	} else if current.Left != nil && current.Right == nil {
+		if current == t.Root {
+			t.Root = current.Left
+		} else if isLeftKey {
+			parent.Left = current.Left
+			current.Left = nil
+		} else {
+			parent.Right = current.Left
+			current.Left = nil
+		}
+	} else if current.Left == nil && current.Right != nil {
+		if current == t.Root {
+			t.Root = current.Right
+		} else if isLeftKey {
+			parent.Left = current.Right
+			current.Right = nil
+		} else {
+			parent.Right = current.Right
+			current.Right = nil
+		}
+	} else {
+		successor := t.getSuccessor(current)
+		if current == t.Root {
+			t.Root = successor
+		} else if isLeftKey {
+			parent.Left = successor
+		} else {
+			parent.Right = successor
+		}
+		successor.Left = current.Left
+	}
+
+	return true
+}
+
+func (t *Tree)getSuccessor(node *Node) *Node {
+	successorParent := node
+	successor := node.Right
+
+	for successor.Left != nil {
+		successorParent = successor
+		successor = successor.Left
+	}
+
+	if successor != node.Right {
+		successorParent.Left = successor.Right
+		successor.Right = node.Right
+	}
+
+	return successor
+}
+
 func (t *Tree) Traverse() {
 	t.printNode(t.Root)
 }
@@ -113,7 +217,7 @@ func (t *Tree) PrintTree() {
 				localStack.Push(nil)
 				fmt.Print("--")
 			}
-			fmt.Print(strings.Repeat(" ", n*2-2))
+			fmt.Print(strings.Repeat(" ", int(math.Abs(float64(n*2-2)))))
 		}
 		fmt.Println()
 
@@ -141,4 +245,41 @@ func main() {
 
 	fmt.Println("\nPrinting tree")
 	tree.PrintTree()
+
+	reader := bufio.NewReader(os.Stdin)
+	for true {
+		fmt.Print("Enter first letter of operation to proceed(delete, find, insert, traverse, print): ")
+		operation, _, _ := reader.ReadLine()
+		switch operation[0] {
+		case "f":
+			fmt.Print("Enter key to find: ")
+			line, _, _ := reader.ReadLine()
+			key, _ := strconv.Atoi(string(line))
+			found := tree.Find(key)
+			if found != nil {
+				fmt.Println(found)
+			} else {
+				fmt.Printf("Not with key %d not found\n", key)
+			}
+
+			break
+		case "d":
+			fmt.Print("Enter key to delete: ")
+			line, _, _ := reader.ReadLine()
+			key, _ := strconv.Atoi(string(line))
+			tree.Delete(key)
+			break
+		case "i":
+			fmt.Print("Enter key to insert: ")
+			line, _, _ := reader.ReadLine()
+			key, _ := strconv.Atoi(string(line))
+			tree.Insert(&Node{Key: key, Value: fmt.Sprintf("value #%d", key)})
+			break
+		case "t":
+			tree.Traverse()
+		case "p":
+			tree.PrintTree()
+			break
+		}
+	}
 }
