@@ -250,7 +250,7 @@ func main() {
 	for true {
 		fmt.Print("Enter first letter of operation to proceed(delete, find, insert, traverse, print): ")
 		operation, _, _ := reader.ReadLine()
-		switch operation[0] {
+		switch string(operation[0]) {
 		case "f":
 			fmt.Print("Enter key to find: ")
 			line, _, _ := reader.ReadLine()
